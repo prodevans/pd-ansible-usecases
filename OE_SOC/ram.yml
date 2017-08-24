@@ -1,0 +1,41 @@
+---
+- hosts: all
+  remote_user: devopsuser
+  become: true
+  tasks:
+#  - name: Create a directory
+#    file: path=/home/devopsuser/ram_health state=directory
+#  - name: Copy Script
+#    copy: src=/var/lib/awx/projects/oe_soc/ram.sh  dest=/home/devopsuser/ram_health
+  - name: RAM USAGE IN PERCENTAGE
+    script: /var/lib/awx/projects/oe_soc/ram.sh
+    register: result
+    ignore_errors: yes
+  - debug: var=result
+  - name: HARD DISK (ROOT PARTION) IN PERCENTAGE 
+    script: /var/lib/awx/projects/oe_soc/hard_disk_usage.sh 
+    register: hdd
+  - debug: var=hdd 
+  - name: CPU USAGE IN PERCENTAGE
+    script: /var/lib/awx/projects/oe_soc/cpu.sh
+    register: cpu
+  - debug: var=cpu
+#  - name: Reducing RAM Caches 
+#    shell: sync; echo 1 > /proc/sys/vm/drop_caches
+#    when: 
+  - name: Slack Notification for the job(System Health Check)
+    slack:
+      token: T5P0QEGFQ/B6H0FG96U/yKczessxOtbB31VGv2VWkncE
+      domain: https://prodevans-forge.slack.com
+      msg: "{{ansible_hostname}}: {{ result.stdout}}\n \t\t\t\t\t\t\t\t\t{{ hdd.stdout }}\n \t\t\t\t\t\t\t CPU USAGE IN PERCENTAGE IS: {{ cpu.stdout }}"
+#      msg: "{{ansible_hostname}}: {{ hdd.stdout}}"
+#  - name: HARD DISK (ROOT PARTION) IN PERCENTAGE 
+#    script: /var/lib/awx/projects/oe_soc/hard_disk_usage.sh 
+#    register: hdd
+#  - debug: var=hdd 
+#  - name: Slack Notification for the job(HARD DISK USAGE) 
+#    slack: 
+#      token: T5P0QEGFQ/B6H0FG96U/yKczessxOtbB31VGv2VWkncE
+#      domain: https://prodevans-forge.slack.com 
+#      msg: "{{ansible_hostname}}: {{ hdd.stdout}}"
+

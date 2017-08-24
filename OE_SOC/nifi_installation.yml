@@ -1,0 +1,26 @@
+---
+- hosts: all
+  remote_user: devopsuser
+  become: true
+  vars: 
+    - port: 8089
+  tasks:
+#  - name: Download nifi Package
+#    get_url: url=http://www-us.apache.org/dist/nifi/1.3.0/nifi-1.3.0-bin.zip  dest=/usr/lib  
+  - name: Unzip the downloaded file
+    command: unzip -o /usr/lib/nifi-1.3.0-bin.zip -d /usr/lib
+  - name: Change the Port Number 
+    lineinfile: dest=/usr/lib/nifi-1.3.0/conf/nifi.properties regexp='^nifi.web.http.port' line=nifi.web.http.port={{port}}
+  - name: Install Nifi
+    command: /usr/lib/nifi-1.3.0/bin/nifi.sh install nifi
+#  - name: Disable Firewall
+#    service: name=firewalld state=stopped  disabled=yes
+
+- hosts: all
+  remote_user: devopsuser
+  become: true
+  tasks:
+  - name: Add the hostname /etc/hosts
+    lineinfile: path=/etc/hosts line="{{hostname}}" 
+  - name: Start the nifi Service
+    service: name=nifi state=restarted enabled=yes

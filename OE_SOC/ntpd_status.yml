@@ -1,0 +1,16 @@
+---
+- hosts: all
+  become: true
+  tasks:
+  - name: Check the status
+    command: systemctl status ntpd
+    register: status_ntpd_service
+  - name: Starting the ntpd service
+    command: systemctl start ntpd
+    when: status_ntpd_service | failed
+  - name: Show message on slack
+    slack: 
+      token: T5P0QEGFQ/B6H0FG96U/yKczessxOtbB31VGv2VWkncE
+      domain:  https://prodevans-forge.slack.com
+      msg: "{{ansible_hostname}}:- ntpd service is running"
+    when: status_ntpd_service | success

@@ -1,0 +1,23 @@
+---
+- hosts: all
+  remote_user: devopsuser
+  become: true
+  tasks:
+  - name: Install Squid Package
+    yum: name=squid state=latest
+    register: pkg
+
+  - name: Restart squid service
+    service: name=squid state=restarted enabled=yes
+    register: srv
+  - name: Check access.log file
+    stat: path=/var/log/squid/access.log
+    register: file
+  - debug: msg="access.log is created"
+    when: file.stat.exists == true
+  - name: Slack Notification For Complete Squid Installation
+    slack:
+      token: T5P0QEGFQ/B6H0FG96U/yKczessxOtbB31VGv2VWkncE
+      domain: https://prodevans-forge.slack.com
+      msg: "{{ansible_hostname}}: Squid Server is Installed and access.log file is created"
+    when: file.stat.exists == true

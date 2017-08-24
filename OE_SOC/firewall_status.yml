@@ -1,0 +1,24 @@
+---
+- hosts: all
+  remote_user: devopsuser
+  become: true
+  tasks:
+    - block:
+      - name: Check if the firewalld is running
+        command: systemctl status firewalld
+        register: service_firewalld_status
+      - systemd: state=stopped name=firewalld
+        when: service_firewalld_status | success
+      - name: Show Message on slack
+        slack:
+          token: T5P0QEGFQ/B6H0FG96U/yKczessxOtbB31VGv2VWkncE
+          domain:  https://prodevans-forge.slack.com
+          msg: "{{ansible_hostname}}: Firewalld service was started and now service is  stopped."
+        when: service_firewalld_status | success
+      rescue:
+        - name: Show message on slack
+          slack:
+            token: T5P0QEGFQ/B6H0FG96U/yKczessxOtbB31VGv2VWkncE
+            domain: https://prodevans-forge.slack.com
+            msg: "{{ansible_hostname}}:-Firewalld is Stopped"
+

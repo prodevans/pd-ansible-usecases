@@ -1,0 +1,21 @@
+---
+- hosts: all 
+  become: true
+  tasks:
+  - name: Check if Ntpd is running
+    command: systemctl status ntpd
+    ignore_errors: yes
+    changed_when: false
+    register: service_ntpd_status
+  - debug: msg="ntpd is running"
+    when: service_ntpd_status
+
+  - name: Report status of ntpd
+    fail:
+     msg: |
+       Service ntpd is not running.
+       Output of `systemctl status ntpd`:
+       {{ service_ntpd_status.stdout }}
+       {{ service_ntpd_status.stderr }}
+    when: service_ntpd_status | failed
+
