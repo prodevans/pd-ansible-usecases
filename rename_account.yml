@@ -1,0 +1,7 @@
+---
+- hosts: all
+  remote_user: devops
+  become: yes
+  tasks: 
+  - name: Rename Guest Account
+    shell: usermod -l {{new_name}} {{current_username}}
