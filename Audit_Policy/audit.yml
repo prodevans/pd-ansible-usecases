@@ -1,0 +1,43 @@
+---
+- hosts: all
+  remote_user: devops
+  become: true
+  tasks:
+  - name: Install audit Package
+    yum: name=audit state=latest
+  - name: Restart the service and enable the service
+    command: chkconfig auditd on 
+  - name: Configure Auditd service in audit.conf
+    lineinfile:
+      dest: /etc/audit/auditd.conf
+      regexp: "{{ item.regexp }}"
+      line: "{{ item.line }}"
+    with_items:
+      - { regexp: '^##name = mydomain', line: 'name = mydomain' }
+      - { regexp: '^max_log_file = 8', line: 'max_log_file = 6' }
+  - name: Retrieve the version
+    shell: auditctl -v | awk '{print $3}'
+    register: version 
+  - debug: var=version
+  - name: copy the recommended rules 
+    command: cp -rvf /usr/share/doc/audit-{{version.stdout}}/rules/30-stig.rules /etc/audit/audit.rules -p 
+  - name: Start the service
+    service: name=auditd state=started enabled=yes 
+  - name: Add Login and Logout Events Rules(1)
+    lineinfile: dest=/etc/audit/audit.rules regexp="^#-w /var/run/faillock/ -p wa -k logins" line="-w /var/run/faillock/ -p wa -k logins" 
+  - name: Add Login and Logout Events Rules(2)
+    lineinfile: dest=/etc/audit/audit.rules regexp="^#-w /var/log/lastlog -p wa -k logins" line="-w /var/log/lastlog -p wa -k logins" 
+  - name: Process and session initiation (unsuccessful and successful)(1) 
+    lineinfile: dest=/etc/audit/audit.rules regexp="^#-w /var/run/utmp -p wa -k session" line="-w /var/run/utmp -p wa -k session" 
+  - name: Process and Session initiation (unsuccessful and successful)(2) 
+    lineinfile: dest=/etc/audit/audit.rules regexp="^#-w /var/log/btmp -p wa -k session" line="-w /var/log/btmp -p wa -k session" 
+  - name: Process and Session initiation (unsuccessful and successful)(3) 
+    lineinfile: dest=/etc/audit/audit.rules regexp="^#-w /var/log/wtmp -p wa -k session" line="-w /var/log/wtmp -p wa -k session" 
+  - name: Make the Audit Configuration Immutable
+    blockinfile: 
+      path: /etc/audit/audit.rules 
+      block: |
+        ## Make the Audit Configuration Immutable
+        -e 2 
+  
+    
