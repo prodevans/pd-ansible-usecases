@@ -1,0 +1,65 @@
+---
+# tasks file for ssh
+- name: Install OpenSSH Server
+  yum:
+    name: "{{ item }}"
+    state: latest
+  with_items: 
+  - openssh-server
+  - openssh-clients
+
+- name: Create SSH Banner File
+  file: 
+    path: /etc/ssh/sshd-banner
+    state: touch
+
+- name: Take backup of sshd_config
+  shell: cp /etc/ssh/sshd_config  /etc/ssh/sshd_config.original_copy
+
+- name: Configure SSH config file
+  lineinfile: 
+    path: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items: 
+# Disable Root Login using Password Authentication Method
+  - { regexp: '^PermitRootLogin', line: 'PermitRootLogin prohibit-password' }
+# Enable Strict Modes
+  - { regexp: '^#StrictModes', line: 'StrictModes yes' }
+# Enable RSA Authentication
+  - { regexp: '^#RSAAuthentication', line: 'RSAAuthentication yes' }
+# Specify Server Key Bits
+  - { regexp: '^#ServerKeyBits', line: 'ServerKeyBits 1024' }
+# Disable X11 Port Forwarding
+  - { regexp: '^X11Forwarding', line: 'X11Forwarding no' }
+# Specify login Grace Time
+  - { regexp: '^#LoginGraceTime', line: 'LoginGraceTime 600' }
+# Disable Rhosts Authentication
+  - { regexp: '^#RhostsAuthentication', line: 'RhostsAuthentication no'}
+# Refuse to accept Empty Passwords
+  - { regexp: '^#PermitEmptyPasswords', line: 'PermitEmptyPasswords no' }
+# Key Regeneration Interval 
+  - { regexp: '^#KeyRegenerationInterval', line: 'KeyRegenerationInterval 3600'}
+# Specify Host Key file and Location
+  - { regexp: '^#HostKey', line: 'HostKey /etc/ssh/ssh_host_key' }
+# Enable password Authentication
+  - { regexp: '^PasswordAuthentication', line: 'PasswordAuthentication yes'}
+# Specify System Log Facility and Log Level
+  - { regexp: '^SyslogFacility', line: 'SyslogFacility AUTH' }
+  - { regexp: '^#LogLevel', line: 'LogLevel VERBOSE'}
+# Enable Privilege Separation
+  - { regexp: '^#UsePrivilegeSeparation', line: 'UsePrivilegeSeparation yes' }
+# Enable Printing of Message to Support Banner Text
+  - { regexp: '^#Banner', line: 'Banner /etc/ssh/sshd-banner' }
+# Enforce PAM for password authentication
+  - { regexp: '^UsePAM', line: 'UsePAM yes' }
+# Enable Keep Alive
+  - { regexp: '^#TCPKeepAlive', line: 'TCPKeepAlive yes' }
+# Specify Port
+  - { regexp: '^#Port', line: 'Port 22'}
+# Specifying sftp-server Subsystem
+  - { regexp: '^Subsystem', line: 'Subsystem       sftp    /usr/libexec/openssh/sftp-server' }
+# Specify User Protocol Version 
+  - { regexp: '^#Protocol', line: 'Protocol 2' }
+# Specifying the users authorized keys file key storage
+  - { regexp: '^AuthorizedKeysFile', line: 'AuthorizedKeysFile      .ssh/authorized_keys' }
