@@ -1,6 +1,6 @@
 ---
 - hosts: all
-  remote_user: devops
+  remote_user: root
   become: true
   roles: 
   - { role: ssh }
