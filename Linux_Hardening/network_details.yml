@@ -1,0 +1,9 @@
+---
+- hosts: localhost
+  remote_user: root
+  become: true
+  gather_facts: no
+  tasks:
+  - shell: sh network.sh
+    register: result
+  - debug: var=result.stdout_lines
