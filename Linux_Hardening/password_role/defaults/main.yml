@@ -1,0 +1,16 @@
+---
+pam_pwquality_dcredit: 1
+pam_pwquality_difok: 5
+pam_pwquality_gecoscheck: 0
+pam_pwquality_lcredit: 1
+pam_pwquality_maxrepeat: 0
+pam_pwquality_maxclassrepeat: 0
+pam_pwquality_minclass: 0
+pam_pwquality_minlen: 9
+pam_pwquality_ocredit: 1
+pam_pwquality_ucredit: 1
+
+PASS_MAX_DAYS:   1
+PASS_MIN_DAYS:   1
+PASS_MIN_LEN:    1
+PASS_WARN_AGE:   1

@@ -1,0 +1,66 @@
+---
+- name: Ensure that libpwquality is installed
+  tags: pam_pwquality
+  yum:
+    name: libpwquality
+    state: present
+    update_cache: yes
+  register: pam_pwquality_yum
+
+- name: Apply pam_pwquality configuration
+  tags: pam_pwquality
+  template:
+    src: pwquality.conf.j2
+    dest: /etc/security/pwquality.conf
+    owner: root
+    group: root
+    mode: 0644
+  when: pam_pwquality_yum|success
+
+- name: Set Lockout for Failed Password Attempts
+  tags: password_lockout
+  lineinfile:
+    dest: '/etc/pam.d/system-auth'
+    regexp: "^pam_tally2.so"
+    insertafter: "^# User"
+    line: auth        required      pam_tally2.so file=/var/log/tallylog deny=5 even_deny_root unlock_time=1800
+
+- name: In system-auth
+  tags: password_lockout
+  lineinfile:
+    dest: '/etc/pam.d/system-auth'
+    regexp: "^pam_tally2.so"
+    insertbefore: "^account     required      pam_unix.so"
+    line: account     required      pam_tally2.so reset
+    state: present
+
+- name: Set Lockout for Failed Password Attempts-sshd
+  tags: password_lockout
+  lineinfile:
+    dest: '/etc/pam.d/sshd'
+    regexp: "^pam_tally2.so"
+    insertafter: "^#%PAM-1.0"
+    line: auth       required     pam_tally2.so file=/var/log/tallylog deny=5 even_deny_root unlock_time=1800
+
+- name: In sshd
+  tags: password_lockout
+  lineinfile:
+    dest: '/etc/pam.d/sshd'
+    regexp: "^pam_tally2.so"
+    insertafter: "^-auth"
+    line: account    required     pam_tally2.so
+    state: present
+
+- name: Unlock User account
+  tags: password_unlock
+  command: /sbin/pam_tally2 --user=prodevans --reset
+
+- name: Apply login.defs configuration
+  tags: login_defs
+  template:
+    src: login.defs.j2
+    dest: /etc/login.defs
+    owner: root
+    group: root
+    mode: 0644
+
