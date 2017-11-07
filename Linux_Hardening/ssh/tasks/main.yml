@@ -21,46 +21,53 @@
     path: /etc/ssh/sshd_config
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
-    state: present
   with_items: 
 # Disable Root Login using Password Authentication Method
   - { regexp: '^PermitRootLogin', line: 'PermitRootLogin prohibit-password' }
 # Enable Strict Modes
-  - { regexp: '^#StrictModes', line: 'StrictModes yes' }
+  - { regexp: '^StrictModes', line: 'StrictModes yes' }
 # Enable RSA Authentication
-  - { regexp: '^#RSAAuthentication', line: 'RSAAuthentication yes' }
+  - { regexp: '^RSAAuthentication', line: 'RSAAuthentication yes' }
 # Specify Server Key Bits
-  - { regexp: '^#ServerKeyBits', line: 'ServerKeyBits 1024' }
+  - { regexp: '^ServerKeyBits', line: 'ServerKeyBits 1024' }
 # Disable X11 Port Forwarding
   - { regexp: '^X11Forwarding', line: 'X11Forwarding no' }
 # Specify login Grace Time
-  - { regexp: '^#LoginGraceTime', line: 'LoginGraceTime 600' }
+  - { regexp: '^LoginGraceTime', line: 'LoginGraceTime 600' }
 # Disable Rhosts Authentication
-  - { regexp: '^#RhostsAuthentication', line: 'RhostsAuthentication no'}
+  - { regexp: '^RhostsAuthentication', line: 'RhostsAuthentication no'}
 # Refuse to accept Empty Passwords
-  - { regexp: '^#PermitEmptyPasswords', line: 'PermitEmptyPasswords no' }
+  - { regexp: '^PermitEmptyPasswords', line: 'PermitEmptyPasswords no' }
 # Key Regeneration Interval 
-  - { regexp: '^#KeyRegenerationInterval', line: 'KeyRegenerationInterval 3600'}
+  - { regexp: '^KeyRegenerationInterval', line: 'KeyRegenerationInterval 3600'}
 # Specify Host Key file and Location
-  - { regexp: '^#HostKey', line: 'HostKey /etc/ssh/ssh_host_key' }
+  - { regexp: '^HostKey', line: 'HostKey /etc/ssh/ssh_host_key' }
 # Enable password Authentication
   - { regexp: '^PasswordAuthentication', line: 'PasswordAuthentication yes'}
 # Specify System Log Facility and Log Level
   - { regexp: '^SyslogFacility', line: 'SyslogFacility AUTH' }
-  - { regexp: '^#LogLevel', line: 'LogLevel VERBOSE'}
+  - { regexp: '^LogLevel', line: 'LogLevel VERBOSE'}
 # Enable Privilege Separation
-  - { regexp: '^#UsePrivilegeSeparation', line: 'UsePrivilegeSeparation yes' }
+  - { regexp: '^UsePrivilegeSeparation', line: 'UsePrivilegeSeparation yes' }
 # Enable Printing of Message to Support Banner Text
-  - { regexp: '^#Banner', line: 'Banner /etc/ssh/sshd-banner' }
+  - { regexp: '^Banner', line: 'Banner /etc/ssh/sshd-banner' }
 # Enforce PAM for password authentication
   - { regexp: '^UsePAM', line: 'UsePAM yes' }
-# Enable Keep Alive
-  - { regexp: '^#TCPKeepAlive', line: 'TCPKeepAlive yes' }
+# Enable Public Key Authentication
+  - { regexp: '^PubkeyAuthentication', line: 'PubkeyAuthentication yes' }
+# Enable Keep Alive 
+  - { regexp: '^KeepAlive', line: 'KeepAlive yes' }
 # Specify Port
-  - { regexp: '^#Port', line: 'Port 22'}
+  - { regexp: '^Port', line: 'Port 22'}
 # Specifying sftp-server Subsystem
   - { regexp: '^Subsystem', line: 'Subsystem       sftp    /usr/libexec/openssh/sftp-server' }
 # Specify User Protocol Version 
-  - { regexp: '^#Protocol', line: 'Protocol 2' }
+  - { regexp: '^Protocol', line: 'Protocol 2' }
 # Specifying the users authorized keys file key storage
   - { regexp: '^AuthorizedKeysFile', line: 'AuthorizedKeysFile      .ssh/authorized_keys' }
+
+- name: Restart SSH Service 
+  service: 
+    name: sshd
+    state: restarted
+    enabled: yes 
